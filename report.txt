@@ -1,0 +1,47 @@
+Spencer King and Hannah Porter
+
+Lab 10
+
+Digital Piano Lab Report
+
+12/11/13
+
+
+How it works from the user perspective:
+
+The digital piano program opens a title screen in the graphics window displaying the name of the program and two options: free play and load file. The user can choose by clicking the button corresponding to their choice.
+
+In free play mode, the user interacts with a display of a two-octave piano. The user can click any of the notes to hear the corresponding wav file and see the key light up simultaneously. The “+” and “-” buttons allow the user to shift the keyboard up or down by one octave. The arrow indicates where middle C is, and thus whether the keyboard has been shifted up or down the scale.
+
+In load file, the user inputs a file to be played and displayed on the digital keyboard. When the user presses the load file button, a prompt for a file name is displayed in the terminal. The user can then type in the name of the file they wish to load and watch as the program plays the appropriate sounds and lights up the appropriate keys.
+
+
+How the program works internally:
+
+Our main function is stored in the file piano_main.c. It starts by declaring a pointer for the frequency and multiple arrays relating to information about each note, all of which are used throughout our project. After this, the function initialize_array is called. This function is located in the file piano_sound.c and initializes the array of system calls for playing various notes. Each position in the array is a call for a unique wav file.
+
+    The next function main calls is title_screen, which is stored in the file title_screen.c. This function defines several variables and then opens a graphics window. It then calls a series of draw functions which draw all of the words and buttons displayed on the screen. The function then enters a while loop. There are two possible ways to advance from here, determined by two if statements.
+
+The first if statement determines whether or not the user has clicked within the “free play” button. This if statement will clear the display and then call the function piano_graphic, stored in piano_graphic.c. The piano_graphic function calls the function draw_piano, which uses multiple for loops and if statements to draw two octaves of keys on the screen. Functions that draw the change octave buttons and the arrow that indicates the current location of middle C are then called. The piano_graphic function then enters a while loop. If either of the change octave buttons are clicked, if statements determine which was clicked and the value of *f is changed appropriately. After this, draw_arrow is called with the new value of *f and the middle C indicator is redrawn in the correct location. The last function called by this loop is the function get_note, stored in piano_sound.c.
+
+    The function get_note consists of a series of if statements that determine which key, if any, the user clicked. Once a match has been found, a series of if statements checks the value of *f to determine which wav file is associated with that key. Due to the ability to change octaves, there are three possibilities for any given key. The string for the appropriate system call will be taken from the commands array. A fork is then used to play a wav file while highlighting the key pressed. The if part of the fork calls play_note, which just calls system with the string taken from the commands array. This plays the appropriate wav file. The else section of the fork causes the key to light up with multiple calls to the function flash_key, stored in piano_graphic.c. The flash_key function simply uses a for loop to fill in a key by repeatedly drawing vertical lines.  
+
+    Back in title_screen, the other if statement determines whether or not the user has clicked within the “load file” button. This will print a prompt to the terminal asking the user to enter the name of a .music file they wish to load. The file name is scanned as a string into the array called input. This file is then opened and read, and its contents are scanned as a string into the output array. The function piano2, stored in piano2.c, is then called.
+
+This function is a slightly modified version of the program for lab 8. The string from the output array is used as an input for piano2. It opens a wav file for writing and then calls the function record_notes. The function runs a for loop that calls the functions change_length and change_octave. Both of these use if statements to determine the appropriate length and frequency multiplier for the input. This is followed by an if statement which loads the input into get_note_info if this input is a character or a “.”. The function get_note_info uses a for loop to acquire the appropriate frequency. The frequency and length are then stored in the 2 by 2 array named noteinfo.  After this, the choose_frequency function is called. This function is similar to get_note_info but instead plugs the frequency values into write_note in order to create a wav file. At the end of this loop is an if statement which causes the loop to break if the character ‘X’ appears in the input.
+
+After piano2 has finished, the program comes to a fork. The if part of the fork uses a system call to play the wav file generated by piano2. The else part of the fork calls the functions to draw the piano and the related buttons and text and then calls the function key_animation, stored in piano2.c. This function uses a while loop to plug the frequency values stored in noteinfo into the function key_animation_freq, also in piano2.c. This function uses if statements to determine where to draw the middle C indicator. It then uses if statements based on where the indicator was drawn to call either low_keyboard or high_keyboard. This determines which frequency is paired with which key on the keyboard and then makes that key light up using the function animate_key, stored in piano_graphic.c. This function calls the flash_key function multiple times with a sleep in between in order to fill in the key with orange and then with black. This gives the appearance of a flash. After all of this has occurred, the fork returns 0.
+
+
+
+How you verified that the output of the program is correct:
+
+    We verified the output of our program is correct through meticulous testing. We made sure that all of the keys in free play mode played the correct note and that they all still worked correctly after multiple octave changes. We tested the load file portion of the program with the premade .music files available from the lab 8 page and a couple that we created ourselves. Our program performed the correct operations for all but one of them.
+
+
+
+Comments/Miscellaneous Notes:
+
+We had originally planned to map the piano keys to the keyboard, but after some experimentation we decided this was not a good decision. The keyboard is far too cramped and we decided it would not improve the user’s experience. 
+
+When testing the load file function we noticed that the animation can sometimes fall out of sync with the wav file. We only noticed this in the invention.music though it could happen with other files. We were unable to figure out why, but we believe it may have been holding the high C for too long, though we are not sure why it would do this. In the free play function we noticed that if you attempt to click another key the instant after a wav has finished playing, the key will not light up and the sound will not play. It also prints a message about threading to the terminal. We believe this is due to a brief silence at the end of each individual wav file. The fork could be causing problems because the previous wav file has not actually finished playing despite the user believing it has finished. 
